@@ -84,6 +84,7 @@
 
 ;; -----------------------------------------------------------------------------
 
+;; is the traversal path vervifed by ->dd
 (define-metafunction dadl
   ->dd-traverse-equivalence-conjecture : c -> boolean
   [(->dd-traverse-equivalence-conjecture c)
@@ -95,8 +96,16 @@
   [(ddtec/a c (at_1 at_2 ...)) 
    (ddtec/a c_2 (at_2 ...))
    (where c_2 (next-config c at_1))
-   (side-condition (term (valid-transition? c at_1)))]
+   (side-condition (term c_2))]
   [(ddtec/a c (at_1 at_2 ...)) false])
+
+(define-metafunction dadl
+  next-config : c at -> c or false
+  [(next-config c at)
+   c_2
+   (where (c ...) ,(apply-reduction-relation ->dd (term c)))
+   (where c_2 (get-matching  at))])
+
 
 (module+ test (test-results))
 
