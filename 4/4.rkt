@@ -97,17 +97,32 @@
    (ddtec/a c_2 (at_2 ...))
    (where c_2 (next-config c at_1))
    (side-condition (term c_2))]
-  [(ddtec/a c (at_1 at_2 ...)) false])
+  [(ddtec/a c (at_1 at_2 ...)) #f])
 
 (define-metafunction dadl
-  next-config : c at -> c or false
+  next-config : c at -> c or #f
   [(next-config c at)
    c_2
-   (where (c ...) ,(apply-reduction-relation ->dd (term c)))
-   (where c_2 (get-matching  at))])
+   (where (c_1 ...) ,(apply-reduction-relation ->dd (term c)))
+   (where c_2 (get-matching at (c_1 ...)))]
+  [(next-config c at) #f])
+
+(define-metafunction dadl
+  get-matching : at (c ...) -> c or #f
+  [(get-matching at (c_0 ... (config n at (r ...)) c_2 ...))
+   (config n at (r ...))]
+  [(get-matching at (c ...)) #f])
+
+(module+ test
+    (test-equal (term (->dd-traverse-equivalence-conjecture ,config-with-ordered-rooms))
+                #t)
+    ;;get-matching
+    (let ([cfgs (apply-reduction-relation ->dd config-with-ordered-rooms)])
+      (test-equal (term (get-matching "ell" ,cfgs)) (first cfgs))))
+(module+ check
+  (redex-check dadl (->dd-traverse-equivalence-conjecture c) #t))
 
 
-(module+ test (test-results))
 
 ;; =============================================================================
 
@@ -161,3 +176,5 @@
 (test-equal (term (traverse ,config2)) (list "TheLab"))
 (test-equal (term (traverse ,config3)) (list "TheLab" "Punters"))
 (test-equal (term (traverse ,config-with-ordered-rooms)) (list "curry" "ell"))
+
+(module+ test (test-results))
