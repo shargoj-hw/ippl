@@ -14,6 +14,14 @@
   (at string)
   (desc string))
 
+(define-extended-language dadl-C dadl
+  (C (config n P (r ...)))
+  (P hole at))
+(module+ test
+  (test-equal (redex-match? dadl-C C config-with-ordered-rooms) #t))
+
+
+;; =============================================================================
 ;; -----------------------------------------------------------------------------
 
 ;; Problem 1 Extend your Redex model of DADL with a general reduction
@@ -26,9 +34,11 @@
 ;; traversal
 (define ->dd 
   (reduction-relation 
-   dadl
-   #:domain c
-   (--> (config n at (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...))
+   dadl-C
+   #:domain C
+   (--> (in-hole (config n P (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...)) at)
+        (in-hole (config n P (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...)) to))
+   #;(--> (config n at (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...))
 	(config n to (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...)))))
 
 (module+ test
