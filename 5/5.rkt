@@ -15,11 +15,15 @@
   (desc string))
 
 (define-extended-language dadl-C dadl
-  (C (config n P (r ...)))
-  (P hole at))
-(module+ test
-  (test-equal (redex-match? dadl-C C config-with-ordered-rooms) #t))
+  (C (config n at (r_1 ... hole r_2 ...))))
 
+(define ->ddC
+  (reduction-relation
+   dadl-C
+   (--> (in-hole (config n at (r_1 ... hole r_2 ...))
+		 (room at desc (e_1 ... (exit dir to) e_2 ...)))
+	(in-hole (config n to (r_1 ... hole r_2 ...))
+		 (room at desc (e_1 ... (exit dir to) e_2 ...))))))
 
 ;; =============================================================================
 ;; -----------------------------------------------------------------------------
@@ -34,11 +38,9 @@
 ;; traversal
 (define ->dd 
   (reduction-relation 
-   dadl-C
-   #:domain C
-   (--> (in-hole (config n P (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...)) at)
-        (in-hole (config n P (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...)) to))
-   #;(--> (config n at (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...))
+   dadl
+   #:domain c
+   (--> (config n at (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...))
 	(config n to (r_1 ... (room at desc (e_1 ... (exit dir to) e_2 ...)) r_2 ...)))))
 
 (module+ test
@@ -207,6 +209,14 @@
 		 (room "Punters" "piano" ())))))
 (define config-with-ordered-rooms
   (term (config "Ryan" "curry"
+		((room "curry" "piano" ((exit EAST "ell")))
+		 (room "ell" "husky" ((exit WEST "curry")
+				      (exit NORTH "krentzman")
+				      (exit EAST "tunnels")))
+		 (room "tunnels" "creepy" ())
+		 (room "krentzman" "outside" ((exit NORTH "curry")))))))
+(define config-with-ordered-rooms2
+  (term (config "Ryan" "ell"
 		((room "curry" "piano" ((exit EAST "ell")))
 		 (room "ell" "husky" ((exit WEST "curry")
 				      (exit NORTH "krentzman")
