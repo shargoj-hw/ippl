@@ -17,13 +17,16 @@
 (define-extended-language dadl-C dadl
   (C (config n at (r_1 ... hole r_2 ...))))
 
-(define ->dd--standard
+;; Standard relation on ->dd. Always takes the first exit.
+(define ->dd-standard
   (reduction-relation
    dadl-C #:domain c
    (--> (in-hole (config n at (r_1 ... hole r_2 ...))
 		 (room at desc ((exit dir to) e ...)))
 	(in-hole (config n to (r_1 ... hole r_2 ...))
 		 (room at desc ((exit dir to) e ...))))))
+
+
 
 ;; =============================================================================
 ;; -----------------------------------------------------------------------------
