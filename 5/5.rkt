@@ -72,11 +72,13 @@
 
 ;; -----------------------------------------------------------------------------
 
+;; Conjecture: the ->dd-standard relation follows the same path as traverse
 (define-metafunction dadl
   traverse/->dd-standard-equivalence-conjecture : c -> boolean
   [(traverse/->dd-standard-equivalence-conjecture c)
    (tddsec/gr c (traverse c))])
 
+;; Iterate over (at ...) checking that ->dd-standard follows the same path
 (define-metafunction dadl
   tddsec/gr : c (at ...) -> boolean
   [(tddsec/gr c ()) #t]
@@ -102,6 +104,7 @@
    #t))
 
 (module+ check
+  ;; fails due to redex check generating badly formed configs
   (redex-check dadl c (term (traverse/->dd-standard-equivalence-conjecture c))))
 
 ;; =============================================================================
