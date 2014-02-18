@@ -66,12 +66,43 @@
       (room
        "ell"
        "husky"
-       ((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
+       ((exit NORTH "krentzman") (exit EAST "tunnels") (exit WEST "curry")))
       (room "tunnels" "creepy" ())
       (room "krentzman" "outside" ((exit NORTH "curry"))))))))
 
+;; -----------------------------------------------------------------------------
 
+(define-metafunction dadl
+  traverse/->dd-standard-equivalence-conjecture : c -> boolean
+  [(traverse/->dd-standard-equivalence-conjecture c)
+   (tddsec/gr c (traverse c))])
 
+(define-metafunction dadl
+  tddsec/gr : c (at ...) -> boolean
+  [(tddsec/gr c ()) #t]
+  [(tddsec/gr (config n at_here (r ...)) (at_here at_next ...))
+   (tddsec/gr c_next (at_next ...))
+   (where (c_next) ,(apply-reduction-relation 
+		     ->dd-standard
+		     (term (config n at_here (r ...)))))]
+  [(tddsec/gr c (at_here at_next ...)) #f])
+
+(module+ test
+  (check-equal?
+   (term (traverse/->dd-standard-equivalence-conjecture
+	  ,config-with-ordered-rooms))
+   #t)
+  (check-equal?
+   (term (traverse/->dd-standard-equivalence-conjecture
+	  ,config-with-ordered-rooms2))
+   #t)
+  (check-equal?
+   (term (traverse/->dd-standard-equivalence-conjecture
+	  ,config-with-ordered-rooms3))
+   #t))
+
+(module+ check
+  (redex-check dadl c (term (traverse/->dd-standard-equivalence-conjecture c))))
 
 ;; =============================================================================
 ;; -----------------------------------------------------------------------------
@@ -106,45 +137,45 @@
 		       (room "krentzman" "outside" ((exit NORTH "curry"))))))))
 
   (test-equal
-   (apply-reduction-relation
-    ->dd 
-    (term (config "Ryan" "ell"
-		  ((room "curry" "piano" ((exit EAST "ell")))
-		   (room "ell" "husky" ((exit WEST "curry")
-					(exit NORTH "krentzman")
-					(exit EAST "tunnels")))
-		   (room "tunnels" "creepy" ())
-		   (room "krentzman" "outside" ((exit NORTH "curry")))))))
-   (term ((config
-	   "Ryan"
-	   "tunnels"
-	   ((room "curry" "piano" ((exit EAST "ell")))
-	    (room
-	     "ell"
-	     "husky"
-	     ((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
-	    (room "tunnels" "creepy" ())
-	    (room "krentzman" "outside" ((exit NORTH "curry")))))
-	  (config
-	   "Ryan"
-	   "krentzman"
-	   ((room "curry" "piano" ((exit EAST "ell")))
-	    (room
-	     "ell"
-	     "husky"
-	     ((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
-	    (room "tunnels" "creepy" ())
-	    (room "krentzman" "outside" ((exit NORTH "curry")))))
-	  (config
-	   "Ryan"
-	   "curry"
-	   ((room "curry" "piano" ((exit EAST "ell")))
-	    (room
-	     "ell"
-	     "husky"
-	     ((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
-	    (room "tunnels" "creepy" ())
-	    (room "krentzman" "outside" ((exit NORTH "curry")))))))))
+   (list->set (apply-reduction-relation
+	       ->dd 
+	       (term (config "Ryan" "ell"
+			     ((room "curry" "piano" ((exit EAST "ell")))
+			      (room "ell" "husky" ((exit WEST "curry")
+						   (exit NORTH "krentzman")
+						   (exit EAST "tunnels")))
+			      (room "tunnels" "creepy" ())
+			      (room "krentzman" "outside" ((exit NORTH "curry"))))))))
+   (list->set (term ((config
+		      "Ryan"
+		      "krentzman"
+		      ((room "curry" "piano" ((exit EAST "ell")))
+		       (room
+			"ell"
+			"husky"
+			((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
+		       (room "tunnels" "creepy" ())
+		       (room "krentzman" "outside" ((exit NORTH "curry")))))
+		     (config
+		      "Ryan"
+		      "curry"
+		      ((room "curry" "piano" ((exit EAST "ell")))
+		       (room
+			"ell"
+			"husky"
+			((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
+		       (room "tunnels" "creepy" ())
+		       (room "krentzman" "outside" ((exit NORTH "curry")))))
+		     (config
+		      "Ryan"
+		      "tunnels"
+		      ((room "curry" "piano" ((exit EAST "ell")))
+		       (room
+			"ell"
+			"husky"
+			((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
+		       (room "tunnels" "creepy" ())
+		       (room "krentzman" "outside" ((exit NORTH "curry"))))))))))
 
 ;; -----------------------------------------------------------------------------
 
@@ -187,7 +218,6 @@
    ;; We ignore the first value in the list given by traverse because
    ;; it is the room we start in.
    (where (at at_2 ...) (traverse c))])
-
 
 ;; ddtec/a : c (at ...) -> boolean
 ;; ACCUMULATOR for ->dd-traverse-equivalence-conjecture given the traverse path.
@@ -317,4 +347,3 @@
   (test-equal (term (traverse ,config-with-ordered-rooms)) (list "curry" "ell")))
 
 (module+ test (test-results))
-
