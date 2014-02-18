@@ -26,6 +26,51 @@
 	(in-hole (config n to (r_1 ... hole r_2 ...))
 		 (room at desc ((exit dir to) e ...))))))
 
+(module+ test
+  (test--> 
+   ->dd-standard
+   config-with-ordered-rooms
+   (term 
+    (config
+     "Ryan"
+     "ell"
+     ((room "curry" "piano" ((exit EAST "ell")))
+      (room
+       "ell"
+       "husky"
+       ((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
+      (room "tunnels" "creepy" ())
+      (room "krentzman" "outside" ((exit NORTH "curry")))))))
+  (test--> 
+   ->dd-standard
+   config-with-ordered-rooms2
+   (term 
+    (config
+     "Ryan"
+     "curry"
+     ((room "curry" "piano" ((exit EAST "ell")))
+      (room
+       "ell"
+       "husky"
+       ((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
+      (room "tunnels" "creepy" ())
+      (room "krentzman" "outside" ((exit NORTH "curry")))))))
+  (test--> 
+   ->dd-standard
+   config-with-ordered-rooms3
+   (term 
+    (config
+     "Ryan"
+     "krentzman"
+     ((room "curry" "piano" ((exit EAST "ell")))
+      (room
+       "ell"
+       "husky"
+       ((exit WEST "curry") (exit NORTH "krentzman") (exit EAST "tunnels")))
+      (room "tunnels" "creepy" ())
+      (room "krentzman" "outside" ((exit NORTH "curry"))))))))
+
+
 
 
 ;; =============================================================================
@@ -260,7 +305,7 @@
 ;; get back the configured exits for that room
 (define-metafunction dadl
   lookup-exits : n (r ...) -> (e ...)
-  ; [(lookup-exits n ()) ,(error "No such room: " (term n))]
+					; [(lookup-exits n ()) ,(error "No such room: " (term n))]
   [(lookup-exits n ((room n desc (e ...)) r_rest ...)) (e ...)]
   [(lookup-exits n ((room n_diff desc (e ...)) r_rest ...))
    (lookup-exits n (r_rest ...))])
