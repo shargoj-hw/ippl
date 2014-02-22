@@ -17,6 +17,44 @@
 (define-extended-language dadl-C dadl
   (C (config n at (r_1 ... hole r_2 ...))))
 
+(define (evaluate c)
+  (if (not (type-checks? c))
+      '("type error!")
+      (term (traverse ,c))))
+
+(module+ test
+  (test-equal
+   (evaluate
+    (term (config "spencer" "library" 
+		  ((room "library" "has many grad students :("
+			 ((exit EAST "connor larkin's")))
+		   (room "connor larkin's" "starting off the night well"
+			 ((exit SOUTH "park")
+			  (exit WEST "library")
+			  (exit EAST "bukowski's")))
+		   (room "bukowski's" "it's getting kind of depressing"
+			 ((exit WEST "connor larkin's")
+			  (exit NORTH "pour house")
+			  (exit EAST "pour house")))
+		   (room "pour house" "$7 nachos are #winning"
+			 ((exit WEST "bukowski's")
+			  (exit SOUTH "bukowski's")
+			  (exit NORTH "area four")))
+		   (room "area four" "mmmm pizza and manhattans"
+			 ((exit SOUTH "pour house")
+			  (exit NORTH "park")))
+		   (room "park" "first time i ever tried laphroig"
+			 ((exit SOUTH "area four")
+			  (exit NORTH "connor larkin's")))))))
+   '("library" "connor larkin's" "park" "area four" "pour house" "bukowski's"))
+
+  (test-equal (evaluate config-with-ordered-rooms) '("type error!")))
+
+					;  t -> boolean
+					; (type-checks? t) determines whether the wf-dd judgment holds for t
+(define (type-checks? t)
+  (judgment-holds (wf-dd ,t)))
+
 (define-judgment-form dadl
   #:mode (wf-dd I)
   #:contract (wf-dd c)
@@ -216,7 +254,7 @@
   #:mode (not-eq I I)
   
   [------------------------- "not-eq"
-   (not-eq any_!_1 any_!_1)])
+			     (not-eq any_!_1 any_!_1)])
 
 ;; =============================================================================
 
