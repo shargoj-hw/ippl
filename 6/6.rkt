@@ -14,41 +14,43 @@
   (at string)
   (desc string))
 
+;; Dadl language w/ room contexts
 (define-extended-language dadl-C dadl
-  (C (config n at (r_1 ... hole r_2 ...))))
+  (C (r_1 ... hole r_2 ...)))
 
-(define (evaluate c)
-  (if (not (type-checks? c))
-      '("type error!")
-      (term (traverse ,c))))
+;; Dadl language w/ errors
+(define-extended-language dadl+TE dadl
+  (TE (err err ...))
+  (err string))
+
+;; Consumes a configuration. If it typechecks, return the list of room
+;; names visited according to ->dd-standard. Otherwise return '("type
+;; error")
+(define-metafunction dadl+TE
+  evaluate : c -> TE or (n ...)
+  [(evaluate c) (eval/a c ())
+   (side-condition (type-checks? (term c)))]
+  [(evaluate c) ("type error!")])
 
 (module+ test
   (test-equal
-   (evaluate
-    (term (config "spencer" "library" 
-		  ((room "library" "has many grad students :("
-			 ((exit EAST "connor larkin's")))
-		   (room "connor larkin's" "starting off the night well"
-			 ((exit SOUTH "park")
-			  (exit WEST "library")
-			  (exit EAST "bukowski's")))
-		   (room "bukowski's" "it's getting kind of depressing"
-			 ((exit WEST "connor larkin's")
-			  (exit NORTH "pour house")
-			  (exit EAST "pour house")))
-		   (room "pour house" "$7 nachos are #winning"
-			 ((exit WEST "bukowski's")
-			  (exit SOUTH "bukowski's")
-			  (exit NORTH "area four")))
-		   (room "area four" "mmmm pizza and manhattans"
-			 ((exit SOUTH "pour house")
-			  (exit NORTH "park")))
-		   (room "park" "first time i ever tried laphroig"
-			 ((exit SOUTH "area four")
-			  (exit NORTH "connor larkin's")))))))
-   '("library" "connor larkin's" "park" "area four" "pour house" "bukowski's"))
+   (term (evaluate ,loopy-config))
+   (term ("library" "connor larkin's" "park" "area four" "pour house" "bukowski's")))
 
-  (test-equal (evaluate config-with-ordered-rooms) '("type error!")))
+  (test-equal (term (evaluate ,config-with-ordered-rooms)) (term ("type error!"))))
+
+;; ACCUMULATOR for evaluate. (at ...) accumulates the list of visited
+;; room names.
+(define-metafunction dadl
+  eval/a : c (at ...) -> (at ...)
+  [(eval/a c (at ...)) 
+   (eval/a c_2 (at ... at_2))
+   (where c_2 ,(apply-reduction-relation ->dd-standard (term c)))
+   (where (config n at_2 (r ...)) c_2)
+   (side-condition (not (member (term at_2) (term (at ...)))))]
+  [(eval/a c (at ...)) (at ...)])
+
+;; -----------------------------------------------------------------------------
 
 ;;  t -> boolean
 ;; (type-checks? t) determines whether the wf-dd judgment holds for t
@@ -254,7 +256,43 @@
   #:mode (not-eq I I)
   
   [------------------------- "not-eq"
-			     (not-eq any_!_1 any_!_1)])
+   (not-eq any_!_1 any_!_1)])
+
+;; -----------------------------------------------------------------------------
+
+(module+ trace/->dd-standard
+  ;; Use traces to test illustrate the conjecture that for a
+  ;; configuration c every configuration reachable with ->dd-standard
+  ;; type checks. You will need the following Racket function:
+
+  (define (illustrate->dd-standard-typechecks config)
+    (traces ->dd-standard config #:pred type-checks?))
+
+  (illustrate->dd-standard-typechecks loopy-config))
+
+(define loopy-config
+  (term
+   (config "spencer" "library" 
+	   ((room "library" "has many grad students :("
+		  ((exit EAST "connor larkin's")))
+	    (room "connor larkin's" "starting off the night well"
+		  ((exit SOUTH "park")
+		   (exit WEST "library")
+		   (exit EAST "bukowski's")))
+	    (room "bukowski's" "it's getting kind of depressing"
+		  ((exit WEST "connor larkin's")
+		   (exit NORTH "pour house")
+		   (exit EAST "pour house")))
+	    (room "pour house" "$7 nachos are #winning"
+		  ((exit WEST "bukowski's")
+		   (exit SOUTH "bukowski's")
+		   (exit NORTH "area four")))
+	    (room "area four" "mmmm pizza and manhattans"
+		  ((exit SOUTH "pour house")
+		   (exit NORTH "park")))
+	    (room "park" "first time i ever tried laphroig"
+		  ((exit SOUTH "area four")
+		   (exit NORTH "connor larkin's")))))))
 
 ;; =============================================================================
 
@@ -262,10 +300,10 @@
 (define ->dd-standard
   (reduction-relation
    dadl-C #:domain c
-   (--> (in-hole (config n at (r_1 ... hole r_2 ...))
-		 (room at desc ((exit dir to) e ...)))
-	(in-hole (config n to (r_1 ... hole r_2 ...))
-		 (room at desc ((exit dir to) e ...))))))
+   (--> (config n at (in-hole (r_1 ... hole r_2 ...)
+			      (room at desc ((exit dir to) e ...))))
+	(config n to (in-hole (r_1 ... hole r_2 ...)
+			      (room at desc ((exit dir to) e ...)))))))
 
 (module+ test
   (test--> 
