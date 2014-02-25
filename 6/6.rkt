@@ -50,8 +50,8 @@
 
   (test-equal (evaluate config-with-ordered-rooms) '("type error!")))
 
-					;  t -> boolean
-					; (type-checks? t) determines whether the wf-dd judgment holds for t
+;;  t -> boolean
+;; (type-checks? t) determines whether the wf-dd judgment holds for t
 (define (type-checks? t)
   (judgment-holds (wf-dd ,t)))
 
