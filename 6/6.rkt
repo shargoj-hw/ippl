@@ -20,15 +20,15 @@
 
 ;; Dadl language w/ errors
 (define-extended-language dadl+TE dadl
-  (TE (err err ...))
-  (err string))
+  (TE ("type error!")))
 
 ;; Consumes a configuration. If it typechecks, return the list of room
 ;; names visited according to ->dd-standard. Otherwise return '("type
 ;; error")
 (define-metafunction dadl+TE
-  evaluate : c -> TE or (n ...)
-  [(evaluate c) (eval/a c ())
+  evaluate : c -> (n ...) or TE
+  [(evaluate c) (eval/a c (at))
+   (where (config n at (r ...)) c)
    (side-condition (type-checks? (term c)))]
   [(evaluate c) ("type error!")])
 
@@ -45,7 +45,7 @@
   eval/a : c (at ...) -> (at ...)
   [(eval/a c (at ...)) 
    (eval/a c_2 (at ... at_2))
-   (where c_2 ,(apply-reduction-relation ->dd-standard (term c)))
+   (where (c_2) ,(apply-reduction-relation ->dd-standard (term c)))
    (where (config n at_2 (r ...)) c_2)
    (side-condition (not (member (term at_2) (term (at ...)))))]
   [(eval/a c (at ...)) (at ...)])
