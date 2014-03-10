@@ -1,0 +1,12 @@
+<configuration name="me" at="floor">
+  <room name="floor" description="weee">
+    <exit direction="south" to="ceiling"/>
+  </room>
+  <room name="ceiling" description="filthy">
+    <exit direction="north" to="floor"/>
+    <exit direction="south" to="attic"/>
+  </room>
+  <room name="attic" description="musty">
+    <exit direction="north" to="ceiling"/>
+  </room>
+</configuration>
