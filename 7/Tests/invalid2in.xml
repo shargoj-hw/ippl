@@ -1,0 +1,20 @@
+<configuration name="Jim" at="home">
+  <room name="neighborhoods">
+    <exit to="elpelon" direction="north">
+    </exit>
+    <exit to="home" direction="west">
+    </exit>
+  </room>
+  <room name="home">
+    <exit to="elpelon" direction="south">
+    </exit>
+    <exit to="neighborhoods" direction="east">
+    </exit>
+  </room>
+  <room name="elpelon">
+    <exit to="neighborhoods" direction="south">
+    </exit>
+    <exit to="home" direction="east">
+    </exit>
+  </room>
+</configuration>
