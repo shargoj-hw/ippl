@@ -22,7 +22,7 @@
 
 ;; Dadl language w/ errors
 (define-extended-language dadl+TE dadl
-  (TE ("type error!")))
+  (TE "type error!"))
 
 ;; Consumes a configuration. If it typechecks, return the list of room
 ;; names visited according to ->dd-standard. Otherwise return '("type

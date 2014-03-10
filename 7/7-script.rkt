@@ -20,6 +20,7 @@ exec racket -tm "$0" ${1+"$@"}
 ;; effect: read a configuration from stdin and write a sequence of room names to stdout 
 
 (module+ test
+  #;
   (test-equal 
    ;; this external test failed because the first type system
    ;; accepted exits to itself
@@ -41,14 +42,14 @@ exec racket -tm "$0" ${1+"$@"}
 (module+ test
   (define x1
     (term 
-     (configuration 
-      (player "matthias" living) 
-      ((room living "piano" ((east sitting)))
-       (room sitting "sofa" ((west living)))))))
+     (config 
+      "matthias" "living" 
+      ((room "living" "piano" ((EAST "sitting")))
+       (room "sitting" "sofa" ((WEST "living")))))))
   
   (define x2
     (term 
-     (configuration (player "matthias" living) ())))
+     (config "matthias" "living" ())))
   
   ;; I exported DD and could therefore run these tests:
   ;; (test-equal (redex-match? DD c x1) #t)
@@ -71,7 +72,7 @@ exec racket -tm "$0" ${1+"$@"}
 (define (xexpr->configuration x)
   (match x 
     [(list 'configuration (list-no-order `(at ,location) `(name ,name)) rooms ...)
-     `(configuration (player ,name ,(string->symbol location)) ,(map xexpr->room rooms))]
+     `(config ,name ,location ,(map xexpr->room rooms))]
     [else (error 'xexpr->configuration "not a configuration: ~e" x)]))
 
 ;; Xexpr -> DD.r
@@ -79,9 +80,9 @@ exec racket -tm "$0" ${1+"$@"}
 (define (xexpr->room x)
   (match x 
     [(list 'room (list-no-order `(name ,name) `(description ,description)) exits ...)
-     `(room ,(string->symbol name) ,description ,(map xexpr->exit exits))]
+     `(room ,name ,description ,(map xexpr->exit exits))]
     [(list 'room (list-no-order `(name ,name)) exits ...)
-     `(room ,(string->symbol name) "no description supplied" ,(map xexpr->exit exits))]
+     `(room ,name "no description supplied" ,(map xexpr->exit exits))]
     [else (error 'xexpr->room "not a room: ~e" x)]))
 
 ;; Xexpr -> DD.(d x) 
@@ -89,5 +90,7 @@ exec racket -tm "$0" ${1+"$@"}
 (define (xexpr->exit x)
   (match x 
     [(list 'exit (list-no-order `(direction ,direction) `(to ,goal)))
-     `(,(string->symbol direction) ,(string->symbol goal))]
+     `(exit ,(string->symbol (string-upcase direction)) ,goal)]
     [else (error 'xexpr->exit "not an exit: ~e" x)]))
+
+(module+ test (test-results))
