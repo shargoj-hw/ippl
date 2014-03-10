@@ -14,33 +14,37 @@
   Spencer Florence \& Jim Shargo
 \end{center}
 
-In this paper we propose three ways to extend the CBOO language.
-We propose: Adding a type system; Allowing for mutation of the fields of an object; Adding inheritance to classes.
+In this paper we propose three extentions to the CBOO language: adding a type system; allowing for mutation of the fields of an object; adding inheritance to class system.
 
 
-To begin, we will need a two part type environment with the bindings of variables to types, as well as a sequence of known types.
+To implement the type system we need a two part type environment.
+This environment will contain the bindings of variables to types, as well as a sequence of known types.
 This sequence will contain $number$, $Object$, and a type for every defined class.
-Each class type will contain types for every method and field. 
+Each class type will contain its name, and the types and names of every method and field for that class.
 The methods of each class must type check in the environment with all types present.
+The syntactic form $t$ must be extended to allow for $number$ and names of classes.
 Then we need a judgment rule for typing every expression form.
-The judgments are identical to simply typed ISWIM with let and sequencing, with new rules added for: $new$, $send$, $get$, and $this$.
-The $new$ judgment rule will check like a function in simply typed ISWIM, where the input types are the fields of the class, and the output type is the type of the class.
-Like $new$, $send$ will type just like a function with the type of the method of the method being called, plus an extra check to ensure that method exists in the given class type.
-$get$ will type like a function of $(class \to \tau)$, with an extra check to ensure the field exists, where $\tau$ is the type of the field. %TODO starting with symbol
-The expression $this$ type checks to the current class type.
+The judgments are identical to those from simply typed ISWIM with let and sequencing, plus new rules for: $new$, $send$, $get$, $this$.
+The judgment rule for $new$ will check like a function in simply typed ISWIM, where the input types are the fields of the class, and the output type is the type of the class.
+Like $new$, $send$ will type as a function.
+Its type is $(C\ \tau\ ...\ \to \sigma)$ where $C$ is the type of the object, $\tau\ ...$ are the types of the arguments, and $\sigma$ is the type of method body.
+In addition, the rule will check that the method exists.
+$get$ will type like a function of $(C \to \tau)$, with an extra check to ensure the field exists, where $\tau$ is the type of the field and $C$ is the type of the class. %TODO starting with symbol
+The expression $this$ type checks to the current class type, and fails to type check outside of a class body.
 
-From here we extend the language and type system to have mutation.
-We will add the syntactic form $set$ which will look like $get$ with a third argument $e$.
-This form will evaluate like $get$, but also change the object in the surrounding let context to contain the new value for that field.
+From here we will extend the language and type system to have mutation of fields.
+We will add the syntactic form $set$ which will look like $get$ with a third argument of the form $e$.
+This form will evaluate like $get$, but also change the object in the surrounding $let$ context to contain the new value for that field, after evaluating $e$.
 The type checking rule for $set$ will look like $get$'s as well, with an added check to ensure $e$ has the same type as the field.
 
 The most difficult task will be adding inheritance.
-To add inheritance we must add a new section to classes in the type environment which will contain their super class.
-Then we will extend the judgment rules for $set$, $get$, $send$ to check not only the given class, but the given classes super class, and that classes super class, and so on.
+To do this we must add a new section to the class syntatic form and to the type environment which will contain the class's super class.
+Then we will extend the judgment rules for $set$, $get$, $send$ to search for a method's or field's existance in the given class's super class, and the super class's super class, all the way up to $Object$.
 Only $Object$ will not contain a super class.
 We will also change $new$'s judgment form, so that new now expect all of the parents fields.
-We must also extend $send$ and $new$ to allow any subtype to be used for any of its arguments %TODO duplicate sentence starts
+We must also extend $send$ and $new$ to allow any subtype to be used for any of its arguments. %TODO duplicate sentence starts
+This could be accomplished by maintain lists of reverse inheritence for each class in type environment.
 From here the evaluation is much easier.
 When evaluating a class form we will flatten its tree, adding the fields and methods of all of its parents to its own definition.
-
+All other evaluation rules can then remain the same.
 \end{document}
